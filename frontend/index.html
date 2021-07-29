@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chessie</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.css">
+    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css">
+    <script>
+        function initBoard(repr){
+            if(repr === undefined)
+                repr = "start"
+            var config = {
+                position: repr,
+                draggable: true,
+                showNotation: false
+            }
+            return new ChessBoard("game", config)
+        }
+        class Game{
+            constructor(repr){
+                this.repr = initBoard(repr)
+                this.board = new Chess()
+            }
+            isOver(){
+                return this.board.game_over()
+            }
+            makeMove(move){
+                this.board.move(move)
+                this.repr.position(this.board.fen())
+            }
+            getMoves(){
+                return this.board.moves()
+            }
+            autoMoves(){
+                this.timer = setInterval(()=>{
+                    if(this.isOver())
+                        clearInterval(this.timer)
+                    console.log("making a move")
+                    let moves = this.getMoves()
+                    let randomMove = moves[Math.floor(Math.random()*moves.length)]
+                    console.log(randomMove)
+                    this.makeMove(randomMove)
+                },100)
+            }
+        }
+        window.onload = function(){
+            let game = new Game()
+            game.autoMoves()
+        }
+    </script>
+</head>
+<body class="bg-gray-800">
+    <p class="text-gray-200 text-5xl text-center">Chessie</p>
+    <br>
+    <br>
+    <div class="flex justify-center">
+        <div id="game" class="w-96">
+        </div>
+    </div>
+   </body>
+</html>
