@@ -1,12 +1,6 @@
-const pieceScores = {
-  "R": 5.63,
-  "N": 3.05,
-  "B": 3.33,
-  "Q": 9.5,
-  "K": 1000,
-}
-
 function pieceVal(piece){
+  //returns piece value of a chess piece
+  //adopted from https://en.wikipedia.org/wiki/Chess_piece_relative_value (refer alphazero)
   switch(piece.toLowerCase()){
     case "r":
       return 5.63
@@ -28,9 +22,21 @@ class Game{
         this.repr = this.initBoard(repr)
         this.board = new Chess()
     }
+    calCost(turn){
+      // turn 0 if white's turn
+      // turn 1 if black's turn
+      let scores = this.getPieces().reduce((a, e) => {
+        return a + pieceVal(e)
+      }, 0)
+      if(turn === 0)
+        console.log(scores)
+      else
+        console.log(-1 * scores)
+    }
     initBoard(repr){
       if(repr === undefined)
         repr = "start"
+
       this.config = {
         position: repr,
         draggable: true,
@@ -48,19 +54,11 @@ class Game{
     getMoves(){
         return this.board.moves()
     }
-    evalScore(){
+    getPieces(){
       //this cost functions returns score in white's perspective i.e higher the score the more possibility of white winning
-      let pieces = this.board.fen().split(" ")[0].split('').filter((c)=>{
+      return this.board.fen().split(" ")[0].split('').filter((c)=>{
         return /^[A-Z]$/i.test(c)
       })
-      return pieces.reduce((a, e) => {
-        if(/^[A-Z]$/.test(e)){
-          return a + pieceVal(e)
-        }
-        else{
-          return a - pieceVal(e)
-        }
-      }, 0)
     }
     autoMoves(){
         this.timer = setInterval(()=>{
@@ -70,7 +68,8 @@ class Game{
             let moves = this.getMoves()
             let randomMove = moves[Math.floor(Math.random()*moves.length)]
             console.log(randomMove)
-            console.log(this.evalScore())
+            this.calCost(0)
+            //console.log(this.calCost(0))
             this.makeMove(randomMove)
         },1000)
     }
@@ -78,5 +77,6 @@ class Game{
 
 window.onload = function(){
   let game = new Game()
-  console.log(Math.round(game.evalScore(), 2))
+  game.autoMoves()
+  //console.log(Math.round(game.evalScore(), 2))
 }
