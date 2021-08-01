@@ -11,6 +11,7 @@ class Game{
         draggable: true,
         showNotation: false
       }
+      return new ChessBoard("game", this.config)
     }
     isOver(){
         return this.board.game_over()
