@@ -11,7 +11,7 @@ function pieceVal(piece){
     case "q":
       return 9.5
     case "k":
-      return 1000
+      return 100
     default:
       return 1
   }
@@ -19,8 +19,14 @@ function pieceVal(piece){
 
 class Game{
     constructor(repr){
-        this.repr = this.initBoard(repr)
+      if(repr === undefined){
+        this.repr = this.initBoard()
         this.board = new Chess()
+      }
+      else{
+        this.repr = this.initBoard(repr)
+        this.board = new Chess(repr)
+      }
     }
     calCost(turn){
       // turn 0 if white's turn
@@ -29,9 +35,9 @@ class Game{
         return a + pieceVal(e)
       }, 0)
       if(turn === 0)
-        console.log(scores)
+        return scores
       else
-        console.log(-1 * scores)
+        return -1 * scores
     }
     initBoard(repr){
       if(repr === undefined)
@@ -60,23 +66,44 @@ class Game{
         return /^[A-Z]$/i.test(c)
       })
     }
-    autoMoves(){
-        this.timer = setInterval(()=>{
-            if(this.isOver())
-                clearInterval(this.timer)
-            console.log("making a move")
-            let moves = this.getMoves()
-            let randomMove = moves[Math.floor(Math.random()*moves.length)]
-            console.log(randomMove)
-            this.calCost(0)
-            //console.log(this.calCost(0))
-            this.makeMove(randomMove)
-        },1000)
+    autoPlay(){
+      console.log("autoplay")
+      this.step = 0
+      this.timer = setInterval(() => {
+        if(this.isOver()){
+          console.log("Game over")
+          return clearInterval(this.timer)
+        }
+        console.log("making a move")
+        let move = this.smartMove(this.step % 2 === 0)
+        this.makeMove(move)
+        this.step++
+      }, 1000)
+    }
+    randomMove(){
+      let moves = this.getMoves()
+      return moves[Math.floor(Math.random()*moves.length)]
+    }
+    smartMove(turn){
+      let moves = this.getMoves()
+      let bestMove = new Array(-10000, -10000)
+      for(let move in moves){
+        let temp = new Game(this.board.fen())
+        temp.makeMove(move)
+        console.log(temp.calCost(turn), bestMove[0], "costi")
+        if(temp.calCost(turn) > bestMove[0]){
+          console.log("switching", move)
+          bestMove[0] = temp.calCost(turn)
+          bestMove[1] = move
+        }
+      }
+      console.log(bestMove[1], "movi")
+      return bestMove[1]
     }
 }
 
 window.onload = function(){
   let game = new Game()
-  game.autoMoves()
+  game.autoPlay()
   //console.log(Math.round(game.evalScore(), 2))
 }
