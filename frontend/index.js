@@ -18,13 +18,14 @@ function pieceVal(piece){
 }
 
 class Game{
-    constructor(repr){
+    constructor(repr, domID){
       if(repr === undefined){
         this.repr = this.initBoard()
         this.board = new Chess()
       }
       else{
-        this.repr = this.initBoard(repr)
+        if(domID !== undefined)
+          this.repr = this.initBoard(repr, domID)
         this.board = new Chess(repr)
       }
     }
@@ -39,7 +40,7 @@ class Game{
       else
         return -1 * scores
     }
-    initBoard(repr){
+    initBoard(repr, idx){
       if(repr === undefined)
         repr = "start"
 
@@ -48,7 +49,10 @@ class Game{
         draggable: true,
         showNotation: false
       }
-      return new ChessBoard("game", this.config)
+      if(idx === undefined)
+        return new ChessBoard("game", this.config)
+      else
+        return new ChessBoard(idx, this.config)
     }
     isOver(){
         return this.board.game_over()
@@ -75,7 +79,8 @@ class Game{
           return clearInterval(this.timer)
         }
         console.log("making a move")
-        let move = this.smartMove(this.step % 2 === 0)
+        let move = this.smartMove(this.step % 2)
+        console.log(move, "move here!")
         this.makeMove(move)
         this.step++
       }, 1000)
@@ -87,8 +92,9 @@ class Game{
     smartMove(turn){
       let moves = this.getMoves()
       let bestMove = new Array(-10000, -10000)
-      for(let move in moves){
-        let temp = new Game(this.board.fen())
+      for(let move of moves){
+        console.log(move, "genMove")
+        let temp = new Game(this.board.fen(), "ghost")
         temp.makeMove(move)
         console.log(temp.calCost(turn), bestMove[0], "costi")
         if(temp.calCost(turn) > bestMove[0]){
